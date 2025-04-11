@@ -1,17 +1,26 @@
 import os
+from playsound import playsound
 
 def clearing_screen_input():
     # clear screen for cleaner look when typing questions
     os.system('cls' if os.name == 'nt' else 'clear')
 
+def play_sound():
+    try:
+        playsound(r"C:\Users\Ivahn\Downloads\success.wav")
+    except Exception as e:
+        print(f"[!] Sound error: {e}")
+
 def user_input_question_answers():
     
     # ask user for question and choices
     question = input("Enter your quiz question: ")
+    play_sound()
     choices = {}
 
     for letter in ['a', 'b', 'c', 'd']:
         choices[letter] = input(f"Enter choice {letter.upper()}: ")
+        play_sound()
         
     # ask for correct answer
     while True:
@@ -39,6 +48,7 @@ def saved_user_questions_answers(data, filename="input_questions_answer.txt"):
         file.write("-" * 45 + "\n\n")
         
         print("\nYour inputted question has been recorded!\n")
+        play_sound()
 
 # use def and make a main loop
 def main():
