@@ -1,3 +1,8 @@
+import os
+
+# clear screen for cleaner look when typing questions
+os.system('cls' if os.name == 'nt' else 'clear')
+
 # ask user for question and choices
 question = input("Enter your quiz question: ")
 
@@ -22,4 +27,9 @@ with open(filename, "a", encoding="utf-8") as file:
     file.write(f"Answer: {data['answer']}\n")
     file.write("-" * 30 + "\n\n")
 
-print("\nYour inputted question has been recorded\n")    
+print("\nYour inputted question has been recorded\n")
+
+# use def and make a main loop
+# add return function for question to return data as dictionary
+# take parameters for saving question
+# call main()
