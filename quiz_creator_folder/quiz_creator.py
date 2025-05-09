@@ -6,10 +6,13 @@ def clearing_screen_input():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def play_sound():
+    
+    # playing sound
     try:
-        playsound(r"C:\Users\Ivahn\Downloads\success.wav")
+        sound_file = os.path.join(os.path.dirname(__file__), "success_1.mp3")
+        playsound(sound_file)
     except Exception as e:
-        print(f"[!] Sound error: {e}")
+        print(f"[!] Sound error:\n    {e}")
 
 def user_input_question_answers():
     
