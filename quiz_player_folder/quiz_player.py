@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 import random
+from playsound import playsound
+import os
+from PIL import Image, ImageTk
 
 def load_questions(filename="input_questions_answer.txt"):
     questions = []
@@ -35,7 +38,15 @@ def load_questions(filename="input_questions_answer.txt"):
     except FileNotFoundError:
         print("'input_questions_answer.txt' not found. Please run the quiz creator.py")
 
-    return questions   
+    return questions 
+
+def play_sound(filename):
+    try:
+        path = os.path.join(os.path.dirname(__file__), filename)
+        playsound(path)
+    except Exception as error:
+        print(f"[Sound Error] {error}") 
+
 
 class UI:
     def __init__(self, master):
@@ -105,8 +116,30 @@ class UI:
         self.next_button.pack(pady=10)
 
         self.next_question()
-    
+
+    def show_image_popup(self, image_path, title="Result"):
+        popup = tk.Toplevel(self.master)
+        popup.title(title)
+        popup.configure(bg="white")
+
+        img = Image.open(image_path)
+        img = img.resize((200, 200))  # Resize for display
+        photo = ImageTk.PhotoImage(img)
+
+        label = tk.Label(popup, image=photo, bg="white")
+        label.image = photo  # Keep a reference!
+        label.pack(padx=20, pady=20)
+
+        close_btn = tk.Button(popup, text="Close", command=popup.destroy)
+        close_btn.pack(pady=10)
+
+        # Center the popup window near main window
+        popup.geometry("+%d+%d" % (self.master.winfo_rootx() + 100, self.master.winfo_rooty() + 100))
+
+
     def next_question(self):
+        play_sound("next_button.mp3")
+
         if not self.questions:
             self.question_label.config(text="No questions available.")
             return
@@ -117,15 +150,25 @@ class UI:
         for key in ['a', 'b', 'c', 'd']:
             self.buttons[key].config(text=f"{key}) {question_data['choices'][key]}", state="normal")
 
+    def flash_background(self, color, duration=200):
+        original_color = self.master.cget("bg")
+        self.master.config(bg=color)
+        self.master.after(duration, lambda: self.master.config(bg=original_color))
+
+
     def check_answer(self, selected_key):
         correct = self.current_question['answer']
         if selected_key == correct:
+            self.flash_background("green")
+            play_sound("correct.mp3")
             messagebox.showinfo("Result", "Correct!")
             self.score += 1
         else:
+            self.flash_background("red")
+            play_sound("wrong.mp3")
             correct_text = self.current_question['choices'][correct]
             messagebox.showerror("Result", f"Wrong!\nCorrect answer: {correct}) {correct_text}")
-
+              
         self.total += 1
         self.score_label.config(text=f"Score: {self.score}/{self.total}")
         for btn in self.buttons.values():
