@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 import threading
 import os
 
-#loading questions from quiz creator
+# loading questions from quiz creator
 def load_questions(filename="input_questions_answer.txt"):
     questions = []
 
@@ -42,18 +42,21 @@ def load_questions(filename="input_questions_answer.txt"):
 
     return questions 
 
+# play sound file from folder "sounds"
 def play_sound(filename):
     try:
         sound_dir = os.path.join(os.path.dirname(__file__), "sounds")
         path = os.path.join(sound_dir, filename)
+        
         # Use threading to play sound without blocking the UI
         threading.Thread(target=lambda: playsound(path), daemon=True).start()
     except Exception as error:
         print(f"[Sound Error] {error}")
 
-
+# main UI for quiz player
 class UI:
     def __init__(self, master):
+        # initializinf for color of UI
         root.configure(background='#FFCCCC')
         self.master = master
         self.master.title("QUIZ PLAYER")
@@ -63,6 +66,7 @@ class UI:
         self.questions = load_questions()
         self.current_question = None
 
+        # set up resource folder
         self.image_dir = os.path.join(os.path.dirname(__file__), "images")
         self.sound_dir = os.path.join(os.path.dirname(__file__), "sounds")
         
@@ -74,6 +78,7 @@ class UI:
             'wrong': self.load_image("wrong.png")
         }
         
+        # question label UI
         self.question_label = tk.Label(
             master,
             text="",
@@ -85,8 +90,8 @@ class UI:
         )
         self.question_label.pack(pady=20)
 
+        # creating answer button (color and size)
         self.buttons = {}
-
         color_map = {
             'a': '#A3C4F3',
             'b': '#A0E7E5',
@@ -109,7 +114,8 @@ class UI:
             )
             btn.pack(pady=5)
             self.buttons[key] = btn
-
+        
+        # create score label
         self.score_label = tk.Label(
             master,
             text="Score: 0/0",
@@ -118,11 +124,12 @@ class UI:
             bg="#FFCCCC"
         )
         self.score_label.pack(pady=10)
-
+        
+        # image display (feedback)
         self.image_label = tk.Label(master, bg="#FFCCCC")
         self.image_label.pack(pady=10)
 
-
+        # create next question button (color and size)
         self.next_button = tk.Button(
             master,
             text="Next Question",
@@ -135,7 +142,8 @@ class UI:
         self.next_button.pack(pady=10)
 
         self.next_question()
-
+    
+    # load and resize image
     def load_image(self, filename):
         try:
             image_path = os.path.join(self.image_dir, filename)
@@ -145,17 +153,20 @@ class UI:
             print(f"[Image Error] {error}")
             blank_img = Image.new('RGB', (120, 120), color='#FFCCCC')
             return ImageTk.PhotoImage(blank_img)
-
+    
+    # change background color (if correct or wrong)
     def flash_background(self, color, duration=5000):
         original_color = self.master.cget("bg")
         self.master.config(bg=color)
         self.master.after(duration, lambda: self.master.config(bg=original_color))
     
+    # display result image (if correct or wrong)
     def show_result_image(self, image_type):
 
         self.image_label.configure(image=self.images[image_type])
         self.image_label.image = self.images[image_type]
 
+    # load next questions
     def next_question(self):
         if not self.questions:
             self.question_label.config(text="No questions available.")
@@ -169,7 +180,8 @@ class UI:
         self.question_label.config(text=f"Q: {question_data['question']}")
         for key in ['a', 'b', 'c', 'd']:
             self.buttons[key].config(text=f"{key}) {question_data['choices'][key]}", state="normal")
-
+    
+    # check if answer is correct or wrong (add flashing color and image)
     def check_answer(self, selected_key):
         correct = self.current_question['answer']
         if selected_key == correct:
