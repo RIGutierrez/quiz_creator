@@ -11,8 +11,8 @@ def play_sound():
     try:
         sound_file = os.path.join(os.path.dirname(__file__), "success_1.mp3")
         playsound(sound_file)
-    except Exception as e:
-        print(f"[!] Sound error:\n    {e}")
+    except Exception as error:
+        print(f"[!] Sound error:\n    {error}")
 
 def user_input_question_answers():
     
