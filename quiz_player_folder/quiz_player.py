@@ -48,20 +48,61 @@ class UI:
         self.questions = load_questions()
         self.current_question = None
 
-        self.question_label = tk.Label(master, text="", font=("Arial", 14), wraplength=480, justify="left")
+        self.question_label = tk.Label(
+            master,
+            text="",
+            font=("fixedsys", 14),
+            wraplength=480,
+            justify="left",
+            fg="white",
+            bg="black"
+        )
         self.question_label.pack(pady=20)
 
         self.buttons = {}
+
+        color_map = {
+            'a': 'blue',
+            'b': 'cyan',
+            'c': 'yellow',
+            'd': 'magenta'
+        }
+
         for key in ['a', 'b', 'c', 'd']:
-            btn = tk.Button(master, text="", font=("Arial", 12), width=30)
+            btn = tk.Button(
+                master,
+                text="",
+                font=("fixedsys", 12),
+                width=30,
+                fg=color_map[key],       # colored text
+                bg="black",              # black button background
+                activebackground="gray20",
+                activeforeground="white",
+                
+            )
             btn.pack(pady=5)
             self.buttons[key] = btn
 
-        self.score_label = tk.Label(master, text="Score: 0/0", font=("Arial", 12))
+        self.score_label = tk.Label(
+            master,
+            text="Score: 0/0",
+            font=("fixedsys", 12),
+            fg="white",
+            bg="black"
+        )
         self.score_label.pack(pady=10)
 
-        self.next_button = tk.Button(master, text="Next Question", font=("Arial", 12))
+        self.next_button = tk.Button(
+            master,
+            text="Next Question",
+            font=("fixedsys", 12),
+           
+            fg="white",
+            bg="gray20",
+            activebackground="gray40"
+        )
         self.next_button.pack(pady=10)
+        
 
 # Run the app
 if __name__ == "__main__":
