@@ -64,6 +64,7 @@ class UI:
         self.score = 0
         self.total = 0
         self.questions = load_questions()
+        self.current_index = 0
         self.current_question = None
 
         # set up resource folder
@@ -168,14 +169,19 @@ class UI:
 
     # load next questions
     def next_question(self):
-        if not self.questions:
-            self.question_label.config(text="No questions available.")
+        if self.current_index >= len(self.questions):
+            self.question_label.config(text="Congrats! You finished all the questions!")
+            for btn in self.buttons.values():
+                btn.config(state="disabled")
+            self.next_button.config(state="disabled")
             return
         
         self.image_label.configure(image='') 
         self.image_label.image = None
 
-        self.current_question = random.choice(self.questions)
+        self.current_question = self.questions[self.current_index]
+        self.current_index += 1
+
         question_data = self.current_question
         self.question_label.config(text=f"Q: {question_data['question']}")
         for key in ['a', 'b', 'c', 'd']:
