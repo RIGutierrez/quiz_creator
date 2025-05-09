@@ -39,7 +39,7 @@ def load_questions(filename="input_questions_answer.txt"):
 
 class UI:
     def __init__(self, master):
-        root.configure(background='black')
+        root.configure(background='#FFCCCC')
         self.master = master
         self.master.title("QUIZ PLAYER")
         self.master.geometry("500x400")
@@ -51,33 +51,34 @@ class UI:
         self.question_label = tk.Label(
             master,
             text="",
-            font=("fixedsys", 14),
+            font=("Cooper Black", 14),
             wraplength=480,
             justify="left",
-            fg="white",
-            bg="black"
+            foreground="gray20",
+            background="#FFCCCC"
         )
         self.question_label.pack(pady=20)
 
         self.buttons = {}
 
         color_map = {
-            'a': 'blue',
-            'b': 'cyan',
-            'c': 'yellow',
-            'd': 'magenta'
+            'a': '#A3C4F3',
+            'b': '#A0E7E5',
+            'c': '#FFF6A3',
+            'd': '#FFAFCC'
         }
 
         for key in ['a', 'b', 'c', 'd']:
             btn = tk.Button(
                 master,
                 text="",
-                font=("fixedsys", 12),
+                font=("Cooper Black", 12),
                 width=30,
-                fg=color_map[key],       # colored text
-                bg="black",              # black button background
+                fg="gray20",       
+                bg=color_map[key],              
                 activebackground="gray20",
                 activeforeground="white",
+                command=lambda answer_key=key: self.check_answer(answer_key)
                 
             )
             btn.pack(pady=5)
@@ -86,23 +87,49 @@ class UI:
         self.score_label = tk.Label(
             master,
             text="Score: 0/0",
-            font=("fixedsys", 12),
+            font=("Cooper Black", 12),
             fg="white",
-            bg="black"
+            bg="#FFCCCC"
         )
         self.score_label.pack(pady=10)
 
         self.next_button = tk.Button(
             master,
             text="Next Question",
-            font=("fixedsys", 12),
-           
+            font=("Cooper Black", 12),
+            command=self.next_question,
             fg="white",
             bg="gray20",
             activebackground="gray40"
         )
         self.next_button.pack(pady=10)
-        
+
+        self.next_question()
+    
+    def next_question(self):
+        if not self.questions:
+            self.question_label.config(text="No questions available.")
+            return
+
+        self.current_question = random.choice(self.questions)
+        question_data = self.current_question
+        self.question_label.config(text=f"Q: {question_data['question']}")
+        for key in ['a', 'b', 'c', 'd']:
+            self.buttons[key].config(text=f"{key}) {question_data['choices'][key]}", state="normal")
+
+    def check_answer(self, selected_key):
+        correct = self.current_question['answer']
+        if selected_key == correct:
+            messagebox.showinfo("Result", "Correct!")
+            self.score += 1
+        else:
+            correct_text = self.current_question['choices'][correct]
+            messagebox.showerror("Result", f"Wrong!\nCorrect answer: {correct}) {correct_text}")
+
+        self.total += 1
+        self.score_label.config(text=f"Score: {self.score}/{self.total}")
+        for btn in self.buttons.values():
+            btn.config(state="disabled")
 
 # Run the app
 if __name__ == "__main__":
