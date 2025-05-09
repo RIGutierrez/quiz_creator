@@ -2,9 +2,11 @@ import tkinter as tk
 from tkinter import messagebox
 import random
 from playsound import playsound
-import os
 from PIL import Image, ImageTk
+import threading
+import os
 
+#loading questions from quiz creator
 def load_questions(filename="input_questions_answer.txt"):
     questions = []
 
@@ -42,10 +44,12 @@ def load_questions(filename="input_questions_answer.txt"):
 
 def play_sound(filename):
     try:
-        path = os.path.join(os.path.dirname(__file__), filename)
-        playsound(path)
+        sound_dir = os.path.join(os.path.dirname(__file__), "sounds")
+        path = os.path.join(sound_dir, filename)
+        # Use threading to play sound without blocking the UI
+        threading.Thread(target=lambda: playsound(path), daemon=True).start()
     except Exception as error:
-        print(f"[Sound Error] {error}") 
+        print(f"[Sound Error] {error}")
 
 
 class UI:
@@ -53,12 +57,23 @@ class UI:
         root.configure(background='#FFCCCC')
         self.master = master
         self.master.title("QUIZ PLAYER")
-        self.master.geometry("500x400")
+        self.master.geometry("600x600")
         self.score = 0
         self.total = 0
         self.questions = load_questions()
         self.current_question = None
 
+        self.image_dir = os.path.join(os.path.dirname(__file__), "images")
+        self.sound_dir = os.path.join(os.path.dirname(__file__), "sounds")
+        
+        os.makedirs(self.image_dir, exist_ok=True)
+        os.makedirs(self.sound_dir, exist_ok=True)
+        
+        self.images = {
+            'correct': self.load_image("correct.png"),
+            'wrong': self.load_image("wrong.png")
+        }
+        
         self.question_label = tk.Label(
             master,
             text="",
@@ -104,6 +119,10 @@ class UI:
         )
         self.score_label.pack(pady=10)
 
+        self.image_label = tk.Label(master, bg="#FFCCCC")
+        self.image_label.pack(pady=10)
+
+
         self.next_button = tk.Button(
             master,
             text="Next Question",
@@ -117,32 +136,33 @@ class UI:
 
         self.next_question()
 
-    def show_image_popup(self, image_path, title="Result"):
-        popup = tk.Toplevel(self.master)
-        popup.title(title)
-        popup.configure(bg="white")
+    def load_image(self, filename):
+        try:
+            image_path = os.path.join(self.image_dir, filename)
+            img = Image.open(image_path)
+            return ImageTk.PhotoImage(img.resize((120, 120)))
+        except Exception as error:
+            print(f"[Image Error] {error}")
+            blank_img = Image.new('RGB', (120, 120), color='#FFCCCC')
+            return ImageTk.PhotoImage(blank_img)
 
-        img = Image.open(image_path)
-        img = img.resize((200, 200))  # Resize for display
-        photo = ImageTk.PhotoImage(img)
+    def flash_background(self, color, duration=5000):
+        original_color = self.master.cget("bg")
+        self.master.config(bg=color)
+        self.master.after(duration, lambda: self.master.config(bg=original_color))
+    
+    def show_result_image(self, image_type):
 
-        label = tk.Label(popup, image=photo, bg="white")
-        label.image = photo  # Keep a reference!
-        label.pack(padx=20, pady=20)
-
-        close_btn = tk.Button(popup, text="Close", command=popup.destroy)
-        close_btn.pack(pady=10)
-
-        # Center the popup window near main window
-        popup.geometry("+%d+%d" % (self.master.winfo_rootx() + 100, self.master.winfo_rooty() + 100))
-
+        self.image_label.configure(image=self.images[image_type])
+        self.image_label.image = self.images[image_type]
 
     def next_question(self):
-        play_sound("next_button.mp3")
-
         if not self.questions:
             self.question_label.config(text="No questions available.")
             return
+        
+        self.image_label.configure(image='') 
+        self.image_label.image = None
 
         self.current_question = random.choice(self.questions)
         question_data = self.current_question
@@ -150,21 +170,17 @@ class UI:
         for key in ['a', 'b', 'c', 'd']:
             self.buttons[key].config(text=f"{key}) {question_data['choices'][key]}", state="normal")
 
-    def flash_background(self, color, duration=200):
-        original_color = self.master.cget("bg")
-        self.master.config(bg=color)
-        self.master.after(duration, lambda: self.master.config(bg=original_color))
-
-
     def check_answer(self, selected_key):
         correct = self.current_question['answer']
         if selected_key == correct:
-            self.flash_background("green")
+            self.flash_background("#C1E1C1")
+            self.show_result_image("correct")
             play_sound("correct.mp3")
             messagebox.showinfo("Result", "Correct!")
             self.score += 1
         else:
-            self.flash_background("red")
+            self.flash_background("#FFB3BA")
+            self.show_result_image("wrong")
             play_sound("wrong.mp3")
             correct_text = self.current_question['choices'][correct]
             messagebox.showerror("Result", f"Wrong!\nCorrect answer: {correct}) {correct_text}")
